@@ -572,6 +572,7 @@ if (args.resume is not None):
     # with torch.no_grad():
     #     x = torch.rand(1, *input_size[1:]).to(device)
     #     model(x)
+    model = parallelize(model)
     checkpt = torch.load(args.resume)
     print(type(checkpt))
     for key in checkpt.keys():
@@ -709,8 +710,6 @@ if args.test_ood_vs_cifar100:
 
     correct = 0
     total = 0
-
-    model.eval()
 
     ood_logpz_list = []
     ood_delta_logp_list = []
