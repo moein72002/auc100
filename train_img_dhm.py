@@ -669,7 +669,7 @@ if args.test_ood_vs_cifar100:
     # use test_loader
 
     # Load CIFAR-100 dataset with modified labels
-    cifar100_test_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
+    cifar100_test_dataset = vdsets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
     cifar100_labels = torch.zeros(len(cifar100_test_dataset))
     cifar100_test_dataset.targets = cifar100_labels
 
