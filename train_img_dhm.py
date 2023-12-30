@@ -574,7 +574,7 @@ if (args.resume is not None):
     #     model(x)
     checkpt = torch.load(args.resume)
     print(type(checkpt))
-    for key, _ in enumerate(checkpt):
+    for key in checkpt.keys():
         print(key)
     print(len(checkpt))
     # sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
