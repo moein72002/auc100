@@ -691,8 +691,8 @@ if args.test_ood_vs_cifar100:
     bpd_meter = utils.AverageMeter()
     ce_meter = utils.AverageMeter()
 
-    if ema is not None:
-        ema.swap()
+    # if ema is not None:
+    #     ema.swap()
 
     update_lipschitz(model.normalizing_flow)
 
