@@ -691,15 +691,15 @@ if args.test_ood_vs_cifar100:
     bpd_meter = utils.AverageMeter()
     ce_meter = utils.AverageMeter()
 
-    # if ema is not None:
-    #     ema.swap()
+    if ema is not None:
+        ema.swap()
 
     update_lipschitz(model.normalizing_flow)
 
     # model.feature_extractor.eval()
     # model.normalizing_flow.eval()
     # model.fully_connected.eval()
-    # model = parallelize(model)
+    model = parallelize(model)
     model.eval()
 
     correct = 0
