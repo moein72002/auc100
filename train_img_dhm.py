@@ -569,9 +569,9 @@ else:
 best_test_bpd = math.inf
 if (args.resume is not None):
     logger.info('Resuming model from {}'.format(args.resume))
-    with torch.no_grad():
-        x = torch.rand(1, *input_size[1:]).to(device)
-        model(x)
+    # with torch.no_grad():
+    #     x = torch.rand(1, *input_size[1:]).to(device)
+    #     model(x)
     checkpt = torch.load(args.resume)
     sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
     state = model.state_dict()
