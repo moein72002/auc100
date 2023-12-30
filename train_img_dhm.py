@@ -577,6 +577,11 @@ if (args.resume is not None):
     for key in checkpt.keys():
         print(key)
     print(len(checkpt))
+    sd_fe = {k: v for k, v in checkpt['state_dict'].items() if 'feature_extractor' in k}
+    state_fe = feature_extractor.state_dict()
+    feature_extractor.update(sd_fe)
+    feature_extractor.load_state_dict(state_fe, strict=True)
+
     sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
     state = model.state_dict()
     state.update(sd)
