@@ -720,8 +720,8 @@ if args.test_ood_vs_cifar100:
         for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
             x = x.to(device)
             bpd, logits, logpz, delta_logp = compute_loss(x, model)
-            ood_logpz_list.append(logpz)
-            ood_delta_logp_list.append(delta_logp)
+            ood_logpz_list.append(logpz.cpu().detach().numpy())
+            ood_delta_logp_list.append(delta_logp.cpu().detach().numpy())
             bpd_meter.update(bpd.item(), x.size(0))
 
             # y = y.to(device)
@@ -736,8 +736,8 @@ if args.test_ood_vs_cifar100:
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
             bpd, logits, logpz, delta_logp = compute_loss(x, model)
-            id_logpz_list.append(logpz)
-            id_delta_logp_list.append(delta_logp)
+            id_logpz_list.append(logpz.cpu().detach().numpy())
+            id_delta_logp_list.append(delta_logp.cpu().detach().numpy())
             bpd_meter.update(bpd.item(), x.size(0))
 
             # y = y.to(device)
