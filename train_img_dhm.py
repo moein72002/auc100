@@ -573,10 +573,10 @@ if (args.resume is not None):
     #     x = torch.rand(1, *input_size[1:]).to(device)
     #     model(x)
     checkpt = torch.load(args.resume)
-    sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
-    state = model.state_dict()
-    state.update(sd)
-    model.load_state_dict(state, strict=True)
+    # sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
+    # state = model.state_dict()
+    # state.update(sd)
+    model.load_state_dict(checkpt)
     ema.set(checkpt['ema'])
     if 'optimizer_state_dict' in checkpt:
         optimizer.load_state_dict(checkpt['optimizer_state_dict'])
