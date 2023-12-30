@@ -664,6 +664,14 @@ secmom_meter = utils.RunningAverageMeter(0.97)
 gnorm_meter = utils.RunningAverageMeter(0.97)
 ce_meter = utils.RunningAverageMeter(0.97)
 
+def update_lipschitz(model):
+    with torch.no_grad():
+        for m in model.modules():
+            if isinstance(m, base_layers.SpectralNormConv2d) or isinstance(m, base_layers.SpectralNormLinear):
+                m.compute_weight(update=True)
+            if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
+                m.compute_weight(update=True)
+
 if args.test_ood_vs_cifar100:
     # Load CIFAR-10 dataset with modified labels
     # use test_loader
@@ -888,15 +896,6 @@ def get_lipschitz_constants(model):
         if isinstance(m, base_layers.LopConv2d) or isinstance(m, base_layers.LopLinear):
             lipschitz_constants.append(m.scale)
     return lipschitz_constants
-
-
-def update_lipschitz(model):
-    with torch.no_grad():
-        for m in model.modules():
-            if isinstance(m, base_layers.SpectralNormConv2d) or isinstance(m, base_layers.SpectralNormLinear):
-                m.compute_weight(update=True)
-            if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
-                m.compute_weight(update=True)
 
 
 def get_ords(model):
