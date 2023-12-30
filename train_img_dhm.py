@@ -577,14 +577,10 @@ if (args.resume is not None):
     for key in checkpt.keys():
         print(key)
     print(len(checkpt))
-    # sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
-    # state = model.state_dict()
-    # state.update(sd)
-    optimizer.load_state_dict(checkpt['optimizer_state_dict'])
-    print(checkpt['state_dict'])
-    print(len(checkpt['state_dict']))
-    print(type(checkpt['state_dict']))
-    model.load_state_dict(checkpt['state_dict'])
+    sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
+    state = model.state_dict()
+    state.update(sd)
+    model.load_state_dict(state, strict=True)
     ema.set(checkpt['ema'])
     if 'optimizer_state_dict' in checkpt:
         optimizer.load_state_dict(checkpt['optimizer_state_dict'])
