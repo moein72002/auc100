@@ -581,7 +581,7 @@ if (args.resume is not None):
     state_fe = feature_extractor.state_dict()
     feature_extractor.load_state_dict(state_fe, strict=True)
 
-    sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
+    sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k and 'normalizing_flow.transforms.0.chain' not in k}
     state = model.state_dict()
     state.update(sd)
     model.load_state_dict(state, strict=True)
