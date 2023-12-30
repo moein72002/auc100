@@ -724,10 +724,10 @@ if args.test_ood_vs_cifar100:
             ood_delta_logp_list.append(delta_logp)
             bpd_meter.update(bpd.item(), x.size(0))
 
-            y = y.to(device)
-            loss = criterion(logits, y)
-            ce_meter.update(loss.item(), x.size(0))
-            _, predicted = logits.max(1)
+            # y = y.to(device)
+            # loss = criterion(logits, y)
+            # ce_meter.update(loss.item(), x.size(0))
+            # _, predicted = logits.max(1)
 
     id_logpz_list = []
     id_delta_logp_list = []
@@ -740,10 +740,10 @@ if args.test_ood_vs_cifar100:
             id_delta_logp_list.append(delta_logp)
             bpd_meter.update(bpd.item(), x.size(0))
 
-            y = y.to(device)
-            loss = criterion(logits, y)
-            ce_meter.update(loss.item(), x.size(0))
-            _, predicted = logits.max(1)
+            # y = y.to(device)
+            # loss = criterion(logits, y)
+            # ce_meter.update(loss.item(), x.size(0))
+            # _, predicted = logits.max(1)
 
     plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list)
     plot_in_out_histogram("delta_logp", "CIFAR10", id_delta_logp_list, "CIFAR100", ood_delta_logp_list)
