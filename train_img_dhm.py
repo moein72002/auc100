@@ -573,6 +573,8 @@ if (args.resume is not None):
     #     x = torch.rand(1, *input_size[1:]).to(device)
     #     model(x)
     checkpt = torch.load(args.resume)
+    for key, _ in enumerate(checkpt):
+        print(key)
     # sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
     # state = model.state_dict()
     # state.update(sd)
