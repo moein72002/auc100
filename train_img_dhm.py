@@ -582,6 +582,8 @@ if (args.resume is not None):
     # state = model.state_dict()
     # state.update(sd)
     optimizer.load_state_dict(checkpt['optimizer_state_dict'])
+    ema.load_state_dict(checkpt['ema'])
+
     model.load_state_dict(checkpt['state_dict'])
     ema.set(checkpt['ema'])
     if 'optimizer_state_dict' in checkpt:
