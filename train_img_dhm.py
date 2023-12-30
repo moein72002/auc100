@@ -580,6 +580,7 @@ if (args.resume is not None):
     # sd = {k: v for k, v in checkpt['state_dict'].items() if 'last_n_samples' not in k}
     # state = model.state_dict()
     # state.update(sd)
+    optimizer.load_state_dict(checkpt['optimizer_state_dict'])
     model.load_state_dict(checkpt['state_dict'])
     ema.set(checkpt['ema'])
     if 'optimizer_state_dict' in checkpt:
