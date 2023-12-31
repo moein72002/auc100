@@ -952,6 +952,7 @@ def main():
         logger.info('Lipsh: {}'.format(pretty_repr(lipschitz_constants[-1])))
         logger.info('Order: {}'.format(pretty_repr(ords[-1])))
 
+        logger.info(model)
         if epoch % 10 == 0 or epoch == args.nepochs - 1:
             if args.test_ood_vs_cifar100:
                 test_ood_vs_cifar100()
