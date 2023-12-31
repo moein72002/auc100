@@ -680,7 +680,7 @@ def update_lipschitz(model):
             if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
                 m.compute_weight(update=True)
 
-def test_ood_vs_cifar100():
+def test_ood_vs_cifar100(model):
     # Load CIFAR-10 dataset with modified labels
     # use test_loader
 
@@ -931,7 +931,7 @@ def pretty_repr(a):
     return '[[' + ','.join(list(map(lambda i: f'{i:.2f}', a))) + ']]'
 
 # if args.test_ood_vs_cifar100:
-#     test_ood_vs_cifar100()
+#     test_ood_vs_cifar100(model)
 
 def main():
     global best_test_bpd
@@ -955,7 +955,7 @@ def main():
         logger.info(model)
         if epoch % 10 == 0 or epoch == args.nepochs - 1:
             if args.test_ood_vs_cifar100:
-                test_ood_vs_cifar100()
+                test_ood_vs_cifar100(model)
 
         if args.ema_val:
             test_bpd = validate(epoch, model, ema)
