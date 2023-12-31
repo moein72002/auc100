@@ -680,7 +680,7 @@ def update_lipschitz(model):
             if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
                 m.compute_weight(update=True)
 
-if args.test_ood_vs_cifar100:
+def test_ood_vs_cifar100():
     # Load CIFAR-10 dataset with modified labels
     # use test_loader
 
@@ -720,14 +720,17 @@ if args.test_ood_vs_cifar100:
         for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
             x = x.to(device)
             bpd, logits, logpz, delta_logp = compute_loss(x, model)
-            ood_logpz_list.append(logpz.cpu().detach().numpy())
-            ood_delta_logp_list.append(delta_logp.cpu().detach().numpy())
+            ood_logpz_list.append(logpz.item())
+            ood_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
 
             # y = y.to(device)
             # loss = criterion(logits, y)
             # ce_meter.update(loss.item(), x.size(0))
             # _, predicted = logits.max(1)
+
+    print(f"ood_logpz_list: {ood_logpz_list}")
+    print(f"ood_delta_logp_list: {ood_delta_logp_list}")
 
     id_logpz_list = []
     id_delta_logp_list = []
@@ -736,8 +739,8 @@ if args.test_ood_vs_cifar100:
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
             bpd, logits, logpz, delta_logp = compute_loss(x, model)
-            id_logpz_list.append(logpz.cpu().detach().numpy())
-            id_delta_logp_list.append(delta_logp.cpu().detach().numpy())
+            id_logpz_list.append(logpz.item())
+            id_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
 
             # y = y.to(device)
@@ -745,9 +748,14 @@ if args.test_ood_vs_cifar100:
             # ce_meter.update(loss.item(), x.size(0))
             # _, predicted = logits.max(1)
 
+    print(f"id_logpz_list: {id_logpz_list}")
+    print(f"id_delta_logp_list: {id_delta_logp_list}")
+
     plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list)
     plot_in_out_histogram("delta_logp", "CIFAR10", id_delta_logp_list, "CIFAR100", ood_delta_logp_list)
 
+if args.test_ood_vs_cifar100:
+    test_ood_vs_cifar100()
 
 def train(epoch, model):
 
