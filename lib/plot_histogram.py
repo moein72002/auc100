@@ -4,8 +4,10 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 
 def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_list, epoch):
     print(f"start calculating AUC in epoch {epoch}")
-    anomaly_scores = np.concatenate([id_list, out_list], axis=0)
-    test_labels = np.concatenate([np.zeros((id_list.shape[0],)), np.ones((id_list.shape[0],))], axis=0)
+    print(id_list.shape)
+    print(out_list.shape)
+    anomaly_scores = np.concatenate([1 - id_list, 1 - out_list], axis=0)
+    test_labels = np.concatenate([np.zeros((id_list.shape[0],)), np.ones((out_list.shape[0],))], axis=0)
     auc = roc_auc_score(test_labels, anomaly_scores)
     print(f"auc in epoch {epoch}: {auc * 100}%")
     print(f"finish calculating AUC in epoch {epoch}")
@@ -28,5 +30,5 @@ def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_l
     # plt.show()
     print(f"finish plot_in_out_histogram in epoch {epoch}")
 
-# plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) + 0.5, 0)
+# plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) - 0.5, 0)
 
