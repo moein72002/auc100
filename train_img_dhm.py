@@ -852,11 +852,9 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(ood_test_loader)):
             x = x.to(device)
-            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            _, _, logpz, _ = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
             ood_logpz_list.append(logpz)
-            bpd_meter.update(bpd.item(), x.size(0))
-            break
 
     ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
     # print(f"ood_logpz_list: {ood_logpz_list}")
