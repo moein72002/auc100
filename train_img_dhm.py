@@ -622,8 +622,11 @@ def compute_loss(x, model, beta=1.0):
 
     (z, delta_logp), logits = model(x, 0)
 
+    print(f"z.size(): {z.size()}")
+    print(f"delta_logp.size(): {delta_logp.size()}")
     # log p(z)
     logpz = standard_normal_logprob(z).view(z.size(0), -1).sum(1, keepdim=True)
+    print(f"logpz.size(): {logpz.size()}")
 
     # log p(x)
     logpx = logpz - beta * delta_logp - np.log(nvals) * (
