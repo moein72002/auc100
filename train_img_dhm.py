@@ -703,7 +703,7 @@ def test_ood_vs_cifar100():
         ema.swap()
 
     # TODO: uncomment below line
-    # update_lipschitz(model.normalizing_flow)
+    update_lipschitz(model.normalizing_flow)
 
     # model.feature_extractor.eval()
     # model.normalizing_flow.eval()
@@ -930,8 +930,8 @@ def get_ords(model):
 def pretty_repr(a):
     return '[[' + ','.join(list(map(lambda i: f'{i:.2f}', a))) + ']]'
 
-if args.test_ood_vs_cifar100:
-    test_ood_vs_cifar100()
+# if args.test_ood_vs_cifar100:
+#     test_ood_vs_cifar100()
 
 def main():
     global best_test_bpd
@@ -943,17 +943,18 @@ def main():
     # if args.resume:
     #     validate(args.begin_epoch - 1, model, ema)
     for epoch in range(args.begin_epoch, args.nepochs):
-        if epoch % 10 == 0 or epoch == args.nepochs - 1:
-            if args.test_ood_vs_cifar100:
-                test_ood_vs_cifar100()
 
         logger.info('Current LR {}'.format(optimizer.param_groups[0]['lr']))
 
-        train(epoch, model)
+        # train(epoch, model)
         lipschitz_constants.append(get_lipschitz_constants(model.normalizing_flow))
         ords.append(get_ords(model.normalizing_flow))
         logger.info('Lipsh: {}'.format(pretty_repr(lipschitz_constants[-1])))
         logger.info('Order: {}'.format(pretty_repr(ords[-1])))
+
+        if epoch % 10 == 0 or epoch == args.nepochs - 1:
+            if args.test_ood_vs_cifar100:
+                test_ood_vs_cifar100()
 
         if args.ema_val:
             test_bpd = validate(epoch, model, ema)
