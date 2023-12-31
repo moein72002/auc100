@@ -622,11 +622,11 @@ def compute_loss(x, model, beta=1.0, testing_ood=False):
 
     (z, delta_logp), logits = model(x, 0)
 
-    print(f"z.size(): {z.size()}")
-    print(f"delta_logp.size(): {delta_logp.size()}")
+    # print(f"z.size(): {z.size()}")
+    # print(f"delta_logp.size(): {delta_logp.size()}")
     # log p(z)
     logpz = standard_normal_logprob(z).view(z.size(0), -1).sum(1, keepdim=True)
-    print(f"logpz.size(): {logpz.size()}")
+    # print(f"logpz.size(): {logpz.size()}")
 
     # log p(x)
     logpx = logpz - beta * delta_logp - np.log(nvals) * (
@@ -698,7 +698,7 @@ def test_ood_vs_cifar100(model):
 
     cifar100_ood_test_loader = torch.utils.data.DataLoader(
         cifar100_test_dataset,
-        batch_size=args.val_batchsize // 20,
+        batch_size=args.val_batchsize,
         shuffle=False,
         num_workers=args.nworkers,
     )
