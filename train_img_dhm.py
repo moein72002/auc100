@@ -911,7 +911,7 @@ def main():
     lipschitz_constants = []
     ords = []
 
-    ood_test_loader = load_ood_test_loader(model, epoch, args.ood_dataset)
+    ood_test_loader = load_ood_test_loader(args.ood_dataset)
 
     # if args.resume:
     #     validate(args.begin_epoch - 1, model, ema)
