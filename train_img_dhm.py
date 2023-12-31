@@ -702,7 +702,8 @@ def test_ood_vs_cifar100():
     if ema is not None:
         ema.swap()
 
-    update_lipschitz(model.normalizing_flow)
+    # TODO: uncomment below line
+    # update_lipschitz(model.normalizing_flow)
 
     # model.feature_extractor.eval()
     # model.normalizing_flow.eval()
@@ -723,11 +724,14 @@ def test_ood_vs_cifar100():
             ood_logpz_list.append(logpz.item())
             ood_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
+            print(f"ood_logpz_list: {ood_logpz_list}")
+            print(f"ood_delta_logp_list: {ood_delta_logp_list}")
 
             # y = y.to(device)
             # loss = criterion(logits, y)
             # ce_meter.update(loss.item(), x.size(0))
             # _, predicted = logits.max(1)
+
 
     print(f"ood_logpz_list: {ood_logpz_list}")
     print(f"ood_delta_logp_list: {ood_delta_logp_list}")
@@ -753,9 +757,6 @@ def test_ood_vs_cifar100():
 
     plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list)
     plot_in_out_histogram("delta_logp", "CIFAR10", id_delta_logp_list, "CIFAR100", ood_delta_logp_list)
-
-if args.test_ood_vs_cifar100:
-    test_ood_vs_cifar100()
 
 def train(epoch, model):
 
@@ -940,6 +941,9 @@ def main():
     # if args.resume:
     #     validate(args.begin_epoch - 1, model, ema)
     for epoch in range(args.begin_epoch, args.nepochs):
+        if epoch % 10 == 0 or epoch == args.nepochs - 1:
+            if args.test_ood_vs_cifar100:
+                test_ood_vs_cifar100()
 
         logger.info('Current LR {}'.format(optimizer.param_groups[0]['lr']))
 
