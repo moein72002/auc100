@@ -722,7 +722,6 @@ def test_ood_vs_cifar100(model):
     total = 0
 
     ood_logpz_list = []
-    ood_delta_logp_list = []
 
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
@@ -730,9 +729,8 @@ def test_ood_vs_cifar100(model):
             print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
             print(f"logpz.shape: {logpz.shape}")
+            print(f"logpz: {logpz}")
             ood_logpz_list.append(logpz)
-            print(f"delta_logp.shape: {delta_logp.shape}")
-            ood_delta_logp_list.append(delta_logp)
             bpd_meter.update(bpd.item(), x.size(0))
 
             # print(f"ood_logpz_list: {ood_logpz_list}")
@@ -744,17 +742,14 @@ def test_ood_vs_cifar100(model):
 
 
     print(f"ood_logpz_list: {ood_logpz_list}")
-    print(f"ood_delta_logp_list: {ood_delta_logp_list}")
 
     id_logpz_list = []
-    id_delta_logp_list = []
 
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
             id_logpz_list.append(logpz.item())
-            id_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
 
             # y = y.to(device)
