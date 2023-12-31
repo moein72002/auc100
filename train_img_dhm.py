@@ -728,6 +728,7 @@ def test_ood_vs_cifar100(model):
             x = x.to(device)
             print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            logpz = np.concatenate(logpz, axis=0)
             print(f"logpz.shape: {logpz.shape}")
             print(f"logpz: {logpz}")
             ood_logpz_list.append(logpz)
