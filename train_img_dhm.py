@@ -726,7 +726,6 @@ def test_ood_vs_cifar100(model):
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
             x = x.to(device)
-            print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
             ood_logpz_list.append(logpz)
