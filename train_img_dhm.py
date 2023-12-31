@@ -729,19 +729,12 @@ def test_ood_vs_cifar100(model):
             x = x.to(device)
             print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            print(type(logpz))
-            print(type(logpz[0]))
-            print(logpz.shape)
-            # ood_logpz_list.append(logpz.item())
-            # ood_delta_logp_list.append(delta_logp.item())
+            ood_logpz_list.append(logpz)
+            ood_delta_logp_list.append(delta_logp)
             bpd_meter.update(bpd.item(), x.size(0))
-            # print(f"logpz.size(): {logpz.size()}")
-            # print(f"logpz type: {type(logpz)}")
-            # print(f"logpz: {logpz}")
-            # print(f"delta_logp.size(): {delta_logp.size()}")
-            # print(f"delta_logp type: {type(delta_logp)}")
-            # print(f"delta_logp: {delta_logp}")
 
+            print(f"ood_logpz_list: {ood_logpz_list}")
+            print(f"ood_delta_logp_list: {ood_delta_logp_list}")
             # y = y.to(device)
             # loss = criterion(logits, y)
             # ce_meter.update(loss.item(), x.size(0))
@@ -770,8 +763,8 @@ def test_ood_vs_cifar100(model):
     print(f"id_logpz_list: {id_logpz_list}")
     print(f"id_delta_logp_list: {id_delta_logp_list}")
 
-    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list)
-    plot_in_out_histogram("delta_logp", "CIFAR10", id_delta_logp_list, "CIFAR100", ood_delta_logp_list)
+    plot_in_out_histogram("log(p(z))", "CIFAR10", np.concatenate(id_logpz_list, axis=0), "CIFAR100", np.concatenate(ood_logpz_list, axis=0))
+    plot_in_out_histogram("delta_logp", "CIFAR10", np.concatenate(id_delta_logp_list, axis=0), "CIFAR100", np.concatenate(ood_delta_logp_list, axis=0))
 
 def train(epoch, model):
 
