@@ -687,10 +687,7 @@ def update_lipschitz(model):
             if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
                 m.compute_weight(update=True)
 
-def test_ood_vs_cifar100(model, epoch):
-    # Load CIFAR-10 dataset with modified labels
-    # use test_loader
-
+def load_ood_test_loader():
     # Load CIFAR-100 dataset with modified labels
     cifar100_test_dataset = vdsets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
     cifar100_labels = torch.zeros(len(cifar100_test_dataset))
@@ -703,53 +700,7 @@ def test_ood_vs_cifar100(model, epoch):
         num_workers=args.nworkers,
     )
 
-    bpd_meter = utils.AverageMeter()
-    ce_meter = utils.AverageMeter()
-
-    if ema is not None:
-        ema.swap()
-
-    # TODO: uncomment below line
-    update_lipschitz(model.normalizing_flow)
-
-    # model.feature_extractor.eval()
-    # model.normalizing_flow.eval()
-    # model.fully_connected.eval()
-    model = parallelize(model)
-    model.eval()
-
-    correct = 0
-    total = 0
-
-    ood_logpz_list = []
-
-    with torch.no_grad():
-        for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
-            x = x.to(device)
-            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            logpz = np.concatenate(logpz, axis=0)
-            ood_logpz_list.append(logpz)
-            bpd_meter.update(bpd.item(), x.size(0))
-            break
-
-    ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
-    print(f"ood_logpz_list: {ood_logpz_list}")
-
-    id_logpz_list = []
-
-    with torch.no_grad():
-        for i, (x, y) in enumerate(tqdm(test_loader)):
-            x = x.to(device)
-            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            logpz = np.concatenate(logpz, axis=0)
-            id_logpz_list.append(logpz)
-            bpd_meter.update(bpd.item(), x.size(0))
-            break
-
-    id_logpz_list = np.concatenate(id_logpz_list, axis=0)
-    print(f"id_logpz_list: {id_logpz_list}")
-
-    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list, epoch)
+    return cifar100_ood_test_loader
 
 def train(epoch, model):
 
@@ -849,8 +800,57 @@ def train(epoch, model):
         torch.cuda.empty_cache()
         gc.collect()
 
+def test_ood_vs_cifar100(model, epoch, in_test_loader, ood_test_loader):
+    bpd_meter = utils.AverageMeter()
+    ce_meter = utils.AverageMeter()
 
-def validate(epoch, model, ema=None):
+    if ema is not None:
+        ema.swap()
+
+    # TODO: uncomment below line
+    update_lipschitz(model.normalizing_flow)
+
+    # model.feature_extractor.eval()
+    # model.normalizing_flow.eval()
+    # model.fully_connected.eval()
+    model = parallelize(model)
+    model.eval()
+
+    correct = 0
+    total = 0
+
+    ood_logpz_list = []
+
+    with torch.no_grad():
+        for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
+            x = x.to(device)
+            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            logpz = np.concatenate(logpz, axis=0)
+            ood_logpz_list.append(logpz)
+            bpd_meter.update(bpd.item(), x.size(0))
+            break
+
+    ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
+    print(f"ood_logpz_list: {ood_logpz_list}")
+
+    id_logpz_list = []
+
+    with torch.no_grad():
+        for i, (x, y) in enumerate(tqdm(test_loader)):
+            x = x.to(device)
+            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            logpz = np.concatenate(logpz, axis=0)
+            id_logpz_list.append(logpz)
+            bpd_meter.update(bpd.item(), x.size(0))
+            break
+
+    id_logpz_list = np.concatenate(id_logpz_list, axis=0)
+    print(f"id_logpz_list: {id_logpz_list}")
+
+    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list, epoch)
+
+
+def validate(epoch, model, ema=None, ood_test_loader):
     """
     Evaluates the cross entropy between p_data and p_model.
     """
@@ -872,10 +872,14 @@ def validate(epoch, model, ema=None):
     total = 0
 
     start = time.time()
+
+    id_logpz_list = []
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
-            bpd, logits, _, _ = compute_loss(x, model)
+            bpd, logits, logpz, _ = compute_loss(x, model)
+            logpz = np.concatenate(logpz, axis=0)
+            id_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
 
             y = y.to(device)
@@ -884,6 +888,26 @@ def validate(epoch, model, ema=None):
             _, predicted = logits.max(1)
             total += y.size(0)
             correct += predicted.eq(y).sum().item()
+
+    # id_logpz_list = np.concatenate(id_logpz_list, axis=0)
+    # print(f"id_logpz_list: {id_logpz_list}")
+
+    ood_logpz_list = []
+
+    with torch.no_grad():
+        for i, (x, y) in enumerate(tqdm(ood_test_loader)):
+            x = x.to(device)
+            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            logpz = np.concatenate(logpz, axis=0)
+            ood_logpz_list.append(logpz)
+            bpd_meter.update(bpd.item(), x.size(0))
+            break
+
+    # ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
+    # print(f"ood_logpz_list: {ood_logpz_list}")
+
+    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list, epoch)
+    
     val_time = time.time() - start
 
     if ema is not None:
@@ -925,11 +949,15 @@ def pretty_repr(a):
 
 
 def main():
+    start_train_time = time.time()
     global best_test_bpd
 
     last_checkpoints = []
     lipschitz_constants = []
     ords = []
+
+    if args.test_ood_vs_cifar100:
+        ood_test_loader = load_ood_test_loader(model, epoch)
 
     # if args.resume:
     #     validate(args.begin_epoch - 1, model, ema)
@@ -972,6 +1000,10 @@ def main():
             'ema': ema,
             'test_bpd': test_bpd,
         }, os.path.join(args.save, 'models', 'most_recent.pth'))
+
+        time_passed = time.time() - start_train_time
+        if time_passed >= 42000:
+            exit()
 
 
 if __name__ == '__main__':
