@@ -638,7 +638,8 @@ def compute_loss(x, model, beta=1.0):
     logpz = torch.mean(logpz).detach()
     delta_logp = torch.mean(-delta_logp).detach()
 
-
+    print(f"logpz.size(): {logpz.size()}")
+    print(f"delta_logp.size(): {delta_logp.size()}")
     return bits_per_dim, logits, logpz, delta_logp
 
 
