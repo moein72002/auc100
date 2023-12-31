@@ -24,4 +24,4 @@ def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_l
     plt.show()
     print("finish plot_in_out_histogram")
 
-# plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) + 5)
+plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) + 5)
