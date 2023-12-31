@@ -698,7 +698,7 @@ def test_ood_vs_cifar100(model):
 
     cifar100_ood_test_loader = torch.utils.data.DataLoader(
         cifar100_test_dataset,
-        batch_size=args.val_batchsize // 10,
+        batch_size=args.val_batchsize,
         shuffle=False,
         num_workers=args.nworkers,
     )
@@ -729,12 +729,14 @@ def test_ood_vs_cifar100(model):
             x = x.to(device)
             print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            print(f"logpz.shape: {logpz.shape}")
             ood_logpz_list.append(logpz)
+            print(f"delta_logp.shape: {delta_logp.shape}")
             ood_delta_logp_list.append(delta_logp)
             bpd_meter.update(bpd.item(), x.size(0))
 
-            print(f"ood_logpz_list: {ood_logpz_list}")
-            print(f"ood_delta_logp_list: {ood_delta_logp_list}")
+            # print(f"ood_logpz_list: {ood_logpz_list}")
+            # print(f"ood_delta_logp_list: {ood_delta_logp_list}")
             # y = y.to(device)
             # loss = criterion(logits, y)
             # ce_meter.update(loss.item(), x.size(0))
