@@ -844,7 +844,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
             total += y.size(0)
             correct += predicted.eq(y).sum().item()
 
-    # id_logpz_list = np.concatenate(id_logpz_list, axis=0)
+    id_logpz_list = np.concatenate(id_logpz_list, axis=0)
     # print(f"id_logpz_list: {id_logpz_list}")
 
     ood_logpz_list = []
@@ -858,7 +858,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
             bpd_meter.update(bpd.item(), x.size(0))
             break
 
-    # ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
+    ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
     # print(f"ood_logpz_list: {ood_logpz_list}")
 
     plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list, epoch)
