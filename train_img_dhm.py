@@ -120,8 +120,12 @@ parser.add_argument('--begin-epoch', type=int, default=0)
 parser.add_argument('--nworkers', type=int, default=4)
 parser.add_argument('--print-freq', help='Print progress every so iterations', type=int, default=20)
 parser.add_argument('--vis-freq', help='Visualize progress every so iterations', type=int, default=500)
-parser.add_argument('--test-ood-vs-cifar100', type=eval, choices=[True, False], default=False)
-
+parser.add_argument(
+    '--ood-dataset', type=str, default='cifar100', choices=[
+        'cifar100',
+        'svhn'
+    ]
+)
 
 args = parser.parse_args()
 
@@ -687,20 +691,21 @@ def update_lipschitz(model):
             if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
                 m.compute_weight(update=True)
 
-def load_ood_test_loader():
-    # Load CIFAR-100 dataset with modified labels
-    cifar100_test_dataset = vdsets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
-    cifar100_labels = torch.zeros(len(cifar100_test_dataset))
-    cifar100_test_dataset.targets = cifar100_labels
+def load_ood_test_loader(ood_dataset_name):
+    if ood_dataset_name == "cifar100":
+        # Load CIFAR-100 dataset with modified labels
+        cifar100_test_dataset = vdsets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
+        cifar100_labels = torch.zeros(len(cifar100_test_dataset))
+        cifar100_test_dataset.targets = cifar100_labels
 
-    cifar100_ood_test_loader = torch.utils.data.DataLoader(
-        cifar100_test_dataset,
-        batch_size=args.val_batchsize,
-        shuffle=False,
-        num_workers=args.nworkers,
-    )
+        cifar100_ood_test_loader = torch.utils.data.DataLoader(
+            cifar100_test_dataset,
+            batch_size=args.val_batchsize,
+            shuffle=False,
+            num_workers=args.nworkers,
+        )
 
-    return cifar100_ood_test_loader
+        return cifar100_ood_test_loader
 
 def train(epoch, model):
 
@@ -800,57 +805,7 @@ def train(epoch, model):
         torch.cuda.empty_cache()
         gc.collect()
 
-def test_ood_vs_cifar100(model, epoch, in_test_loader, ood_test_loader):
-    bpd_meter = utils.AverageMeter()
-    ce_meter = utils.AverageMeter()
-
-    if ema is not None:
-        ema.swap()
-
-    # TODO: uncomment below line
-    update_lipschitz(model.normalizing_flow)
-
-    # model.feature_extractor.eval()
-    # model.normalizing_flow.eval()
-    # model.fully_connected.eval()
-    model = parallelize(model)
-    model.eval()
-
-    correct = 0
-    total = 0
-
-    ood_logpz_list = []
-
-    with torch.no_grad():
-        for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
-            x = x.to(device)
-            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            logpz = np.concatenate(logpz, axis=0)
-            ood_logpz_list.append(logpz)
-            bpd_meter.update(bpd.item(), x.size(0))
-            break
-
-    ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
-    print(f"ood_logpz_list: {ood_logpz_list}")
-
-    id_logpz_list = []
-
-    with torch.no_grad():
-        for i, (x, y) in enumerate(tqdm(test_loader)):
-            x = x.to(device)
-            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            logpz = np.concatenate(logpz, axis=0)
-            id_logpz_list.append(logpz)
-            bpd_meter.update(bpd.item(), x.size(0))
-            break
-
-    id_logpz_list = np.concatenate(id_logpz_list, axis=0)
-    print(f"id_logpz_list: {id_logpz_list}")
-
-    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list, epoch)
-
-
-def validate(epoch, model, ema=None, ood_test_loader):
+def validate(epoch, model, ema=None, ood_test_loader=None):
     """
     Evaluates the cross entropy between p_data and p_model.
     """
@@ -956,29 +911,22 @@ def main():
     lipschitz_constants = []
     ords = []
 
-    if args.test_ood_vs_cifar100:
-        ood_test_loader = load_ood_test_loader(model, epoch)
+    ood_test_loader = load_ood_test_loader(model, epoch, args.ood_dataset)
 
     # if args.resume:
     #     validate(args.begin_epoch - 1, model, ema)
     for epoch in range(args.begin_epoch, args.nepochs):
 
         logger.info('Current LR {}'.format(optimizer.param_groups[0]['lr']))
-
-        # train(epoch, model)
+        if args.ema_val:
+            test_bpd = validate(epoch, model, ema, ood_test_loader=ood_test_loader)
+        else:
+            test_bpd = validate(epoch, model, ood_test_loader=ood_test_loader)
+        train(epoch, model)
         lipschitz_constants.append(get_lipschitz_constants(model.normalizing_flow))
         ords.append(get_ords(model.normalizing_flow))
         logger.info('Lipsh: {}'.format(pretty_repr(lipschitz_constants[-1])))
         logger.info('Order: {}'.format(pretty_repr(ords[-1])))
-
-        if epoch % 10 == 0 or epoch == args.nepochs - 1:
-            if args.test_ood_vs_cifar100:
-                test_ood_vs_cifar100(model, epoch)
-
-        if args.ema_val:
-            test_bpd = validate(epoch, model, ema)
-        else:
-            test_bpd = validate(epoch, model)
 
         if args.scheduler and scheduler is not None:
             scheduler.step()
