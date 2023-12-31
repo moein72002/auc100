@@ -729,8 +729,6 @@ def test_ood_vs_cifar100(model):
             print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
-            print(f"logpz.shape: {logpz.shape}")
-            print(f"logpz: {logpz}")
             ood_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
 
@@ -750,7 +748,8 @@ def test_ood_vs_cifar100(model):
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            id_logpz_list.append(logpz.item())
+            logpz = np.concatenate(logpz, axis=0)
+            id_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
 
             # y = y.to(device)
@@ -759,10 +758,8 @@ def test_ood_vs_cifar100(model):
             # _, predicted = logits.max(1)
 
     print(f"id_logpz_list: {id_logpz_list}")
-    print(f"id_delta_logp_list: {id_delta_logp_list}")
 
     plot_in_out_histogram("log(p(z))", "CIFAR10", np.concatenate(id_logpz_list, axis=0), "CIFAR100", np.concatenate(ood_logpz_list, axis=0))
-    plot_in_out_histogram("delta_logp", "CIFAR10", np.concatenate(id_delta_logp_list, axis=0), "CIFAR100", np.concatenate(ood_delta_logp_list, axis=0))
 
 def train(epoch, model):
 
