@@ -636,8 +636,8 @@ def compute_loss(x, model, beta=1.0, testing_ood=False):
                 args.imagesize * args.imagesize * im_dim) / np.log(2)
     
     if testing_ood:
-        logpz = logpz.detach()
-        delta_logp = -delta_logp.detach()
+        logpz = logpz.detach().cpu()
+        delta_logp = -delta_logp.detach().cpu()
         return bits_per_dim, logits, logpz, delta_logp
 
     logpz = torch.mean(logpz).detach()
@@ -729,8 +729,8 @@ def test_ood_vs_cifar100(model):
             x = x.to(device)
             print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
-            print(type(logpz.item()))
-            print(type(logpz.item()[0]))
+            print(type(logpz))
+            print(type(logpz[0]))
             # ood_logpz_list.append(logpz.item())
             # ood_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
