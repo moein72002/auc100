@@ -604,7 +604,7 @@ fixed_z = standard_normal_sample([min(32, args.batchsize),
 criterion = torch.nn.CrossEntropyLoss()
 
 
-def compute_loss(x, model, beta=1.0):
+def compute_loss(x, model, beta=1.0, testing_ood=False):
     bits_per_dim, logits_tensor = torch.zeros(1).to(x), torch.zeros(n_classes).to(x)
     logpz, delta_logp = torch.zeros(1).to(x), torch.zeros(1).to(x)
 
@@ -634,12 +634,15 @@ def compute_loss(x, model, beta=1.0):
     ) - logpu
     bits_per_dim = -torch.mean(logpx) / (
                 args.imagesize * args.imagesize * im_dim) / np.log(2)
+    
+    if testing_ood:
+        logpz = logpz.detach()
+        delta_logp = -delta_logp.detach()
+        return bits_per_dim, logits, logpz, delta_logp
 
     logpz = torch.mean(logpz).detach()
     delta_logp = torch.mean(-delta_logp).detach()
 
-    print(f"logpz.size(): {logpz.size()}")
-    print(f"delta_logp.size(): {delta_logp.size()}")
     return bits_per_dim, logits, logpz, delta_logp
 
 
@@ -725,9 +728,9 @@ def test_ood_vs_cifar100(model):
         for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
             x = x.to(device)
             print(x.size())
-            bpd, logits, logpz, delta_logp = compute_loss(x, model)
-            ood_logpz_list.append(logpz.item())
-            ood_delta_logp_list.append(delta_logp.item())
+            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
+            ood_logpz_list.append(*logpz.item())
+            ood_delta_logp_list.append(*delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
             print(f"logpz.size(): {logpz.size()}")
             print(f"logpz type: {type(logpz)}")
@@ -751,7 +754,7 @@ def test_ood_vs_cifar100(model):
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
-            bpd, logits, logpz, delta_logp = compute_loss(x, model)
+            bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
             id_logpz_list.append(logpz.item())
             id_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
