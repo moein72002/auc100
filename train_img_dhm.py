@@ -726,10 +726,12 @@ def test_ood_vs_cifar100(model):
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(cifar100_ood_test_loader)):
             x = x.to(device)
+            print(x.size())
             bpd, logits, logpz, delta_logp = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
             ood_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
+            break
 
             # print(f"ood_logpz_list: {ood_logpz_list}")
             # print(f"ood_delta_logp_list: {ood_delta_logp_list}")
@@ -738,7 +740,7 @@ def test_ood_vs_cifar100(model):
             # ce_meter.update(loss.item(), x.size(0))
             # _, predicted = logits.max(1)
 
-
+    ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
     print(f"ood_logpz_list: {ood_logpz_list}")
 
     id_logpz_list = []
@@ -750,15 +752,17 @@ def test_ood_vs_cifar100(model):
             logpz = np.concatenate(logpz, axis=0)
             id_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
+            break
 
             # y = y.to(device)
             # loss = criterion(logits, y)
             # ce_meter.update(loss.item(), x.size(0))
             # _, predicted = logits.max(1)
 
+    id_logpz_list = np.concatenate(id_logpz_list, axis=0)
     print(f"id_logpz_list: {id_logpz_list}")
 
-    plot_in_out_histogram("log(p(z))", "CIFAR10", np.concatenate(id_logpz_list, axis=0), "CIFAR100", np.concatenate(ood_logpz_list, axis=0))
+    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list)
 
 def train(epoch, model):
 
