@@ -1,13 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics import roc_auc_score, accuracy_score
 
-def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_list):
-    print("start plot_in_out_histogram")
-    print(f"{id_list_name}: {id_list}")
-    print(f"{id_list_name} type: {type(id_list)}")
-    print(f"{id_list_name} shape: {id_list.shape}")
-    print(f"{out_list_name}: {out_list}")
-    print(f"{out_list_name} shape: {out_list.shape}")
+def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_list, epoch):
+    print(f"start calculating AUC in epoch {epoch}")
+    anomaly_scores = np.concatenate([id_list, out_list], axis=0)
+    test_labels = np.concatenate([np.ones((id_list.shape[0],)), np.zeros((id_list.shape[0],))], axis=0)
+    auc = roc_auc_score(test_labels, anomaly_scores)
+    print(f"auc in epoch {epoch}: {auc}")
+    print(f"finish calculating AUC in epoch {epoch}")
+    print(f"start plot_in_out_histogram in epoch {epoch}")
     # Plot histograms
     plt.hist(id_list, bins=100, alpha=0.5, color='blue', label=id_list_name)
     plt.hist(out_list, bins=100, alpha=0.5, color='orange', label=out_list_name)
@@ -21,8 +23,9 @@ def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_l
     plt.legend()
 
     # Show the plot
-    plt.savefig('result.png')
+    save_file_name = f"probability_chart_in_epoch_{epoch}"
+    plt.savefig(save_file_name)
     # plt.show()
-    print("finish plot_in_out_histogram")
+    print(f"finish plot_in_out_histogram in epoch {epoch}")
 
-plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) + 5)
+# plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) + 5)

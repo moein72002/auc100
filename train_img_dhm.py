@@ -687,7 +687,7 @@ def update_lipschitz(model):
             if isinstance(m, base_layers.InducedNormConv2d) or isinstance(m, base_layers.InducedNormLinear):
                 m.compute_weight(update=True)
 
-def test_ood_vs_cifar100(model):
+def test_ood_vs_cifar100(model, epoch):
     # Load CIFAR-10 dataset with modified labels
     # use test_loader
 
@@ -732,13 +732,6 @@ def test_ood_vs_cifar100(model):
             bpd_meter.update(bpd.item(), x.size(0))
             break
 
-            # print(f"ood_logpz_list: {ood_logpz_list}")
-            # print(f"ood_delta_logp_list: {ood_delta_logp_list}")
-            # y = y.to(device)
-            # loss = criterion(logits, y)
-            # ce_meter.update(loss.item(), x.size(0))
-            # _, predicted = logits.max(1)
-
     ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
     print(f"ood_logpz_list: {ood_logpz_list}")
 
@@ -753,15 +746,10 @@ def test_ood_vs_cifar100(model):
             bpd_meter.update(bpd.item(), x.size(0))
             break
 
-            # y = y.to(device)
-            # loss = criterion(logits, y)
-            # ce_meter.update(loss.item(), x.size(0))
-            # _, predicted = logits.max(1)
-
     id_logpz_list = np.concatenate(id_logpz_list, axis=0)
     print(f"id_logpz_list: {id_logpz_list}")
 
-    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list)
+    plot_in_out_histogram("log(p(z))", "CIFAR10", id_logpz_list, "CIFAR100", ood_logpz_list, epoch)
 
 def train(epoch, model):
 
@@ -935,8 +923,6 @@ def get_ords(model):
 def pretty_repr(a):
     return '[[' + ','.join(list(map(lambda i: f'{i:.2f}', a))) + ']]'
 
-# if args.test_ood_vs_cifar100:
-#     test_ood_vs_cifar100(model)
 
 def main():
     global best_test_bpd
@@ -959,7 +945,7 @@ def main():
 
         if epoch % 10 == 0 or epoch == args.nepochs - 1:
             if args.test_ood_vs_cifar100:
-                test_ood_vs_cifar100(model)
+                test_ood_vs_cifar100(model, epoch)
 
         if args.ema_val:
             test_bpd = validate(epoch, model, ema)
