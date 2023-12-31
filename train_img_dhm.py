@@ -724,8 +724,8 @@ def test_ood_vs_cifar100(model):
             ood_logpz_list.append(logpz.item())
             ood_delta_logp_list.append(delta_logp.item())
             bpd_meter.update(bpd.item(), x.size(0))
-            print(f"ood_logpz_list.size(): {ood_logpz_list}")
-            print(f"ood_delta_logp_list.size(): {ood_delta_logp_list}")
+            print(f"logpz.size(): {logpz.size()}")
+            print(f"delta_logp.size(): {delta_logp.size()}")
 
             # y = y.to(device)
             # loss = criterion(logits, y)
