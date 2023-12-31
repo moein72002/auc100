@@ -832,7 +832,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(test_loader)):
             x = x.to(device)
-            bpd, logits, logpz, _ = compute_loss(x, model)
+            bpd, logits, logpz, _ = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
             id_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
@@ -918,10 +918,11 @@ def main():
     for epoch in range(args.begin_epoch, args.nepochs):
 
         logger.info('Current LR {}'.format(optimizer.param_groups[0]['lr']))
-        if args.ema_val:
-            test_bpd = validate(epoch, model, ema, ood_test_loader=ood_test_loader)
-        else:
-            test_bpd = validate(epoch, model, ood_test_loader=ood_test_loader)
+        if epoch % 2 == 0:
+            if args.ema_val:
+                test_bpd = validate(epoch, model, ema, ood_test_loader=ood_test_loader)
+            else:
+                test_bpd = validate(epoch, model, ood_test_loader=ood_test_loader)
         train(epoch, model)
         lipschitz_constants.append(get_lipschitz_constants(model.normalizing_flow))
         ords.append(get_ords(model.normalizing_flow))
