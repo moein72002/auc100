@@ -698,7 +698,7 @@ def test_ood_vs_cifar100(model):
 
     cifar100_ood_test_loader = torch.utils.data.DataLoader(
         cifar100_test_dataset,
-        batch_size=args.val_batchsize // 10,
+        batch_size=args.val_batchsize // 20,
         shuffle=False,
         num_workers=args.nworkers,
     )
