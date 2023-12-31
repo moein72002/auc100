@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_list):
     print("start plot_in_out_histogram")
@@ -22,3 +23,5 @@ def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_l
     # Show the plot
     plt.show()
     print("finish plot_in_out_histogram")
+
+# plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) + 5)
