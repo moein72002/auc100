@@ -930,6 +930,8 @@ def get_ords(model):
 def pretty_repr(a):
     return '[[' + ','.join(list(map(lambda i: f'{i:.2f}', a))) + ']]'
 
+if args.test_ood_vs_cifar100:
+    test_ood_vs_cifar100()
 
 def main():
     global best_test_bpd
