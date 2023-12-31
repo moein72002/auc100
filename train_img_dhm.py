@@ -698,6 +698,10 @@ def load_ood_test_loader(ood_dataset_name):
         cifar100_labels = torch.zeros(len(cifar100_test_dataset))
         cifar100_test_dataset.targets = cifar100_labels
 
+        if args.debug:
+            cifar100_test_dataset.data = cifar100_test_dataset.data[:12]
+            cifar100_test_dataset.targets = cifar100_test_dataset.targets[:12]
+
         cifar100_ood_test_loader = torch.utils.data.DataLoader(
             cifar100_test_dataset,
             batch_size=args.val_batchsize,
